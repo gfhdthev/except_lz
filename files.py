@@ -7,38 +7,46 @@ import os
 import pandas as pd
 
 
-class Exception:
-    #инициализация объектов
-    def __init__(self, file, columns):
+
+import os
+import pandas as pd
+
+class Exceptions:
+    def __init__(self, file, columns, types):
         self.file = file
-        self.columns = columns
+        self.columns = columns    # список обязательных столбцов
+        self.types = types        # словарь с ожидаемыми типами для каждого столбца
 
     def processing(self):
         try:
-            #проверяем наличия файла
+            # Проверяем наличие файла
             if not os.path.exists(self.file):
                 raise FileNotFoundError(f"Файл '{self.file}' не найден в указанной директории.")
 
-            df = pd.read_csv(self.file)
+            # Чтение CSV с использованием параметра low_memory=False для корректного определения типов
+            df = pd.read_csv(self.file, low_memory=False)
 
-            #проверяем структуры данных
-            if not all(col in df.columns for col in self.columns):
-                missing_columns = [col for col in self.columns if col not in df.columns] #выписываем недостоющие столбцы
+            # Проверяем наличие всех обязательных столбцов
+            missing_columns = [col for col in self.columns if col not in df.columns]
+            if missing_columns:
                 raise ValueError(f"Несоответствие структуры данных. Отсутствуют столбцы: {missing_columns}")
 
-            #проверяем на пустой датасет
+            # Проверяем, что датасет не пустой
             if df.empty:
                 raise ValueError("Датасет пуст.")
+
+            # Проверка типа данных для каждого столбца, согласно file_types
+            for col, expected_type in self.types.items():
+                actual_type = str(df[col].dtype)
+                if actual_type != expected_type:
+                    raise TypeError(
+                        f"Ошибка: Столбец '{col}' — ожидался {expected_type}, получен {actual_type}"
+                    )
 
             print("Датасет успешно загружен и соответствует ожидаемой структуре.")
             return df
 
-        #выписываем остальные ошибки
         except FileNotFoundError as e:
             print(f"Ошибка: {e}")
         except pd.errors.ParserError:
             print("Ошибка. Проверьте формат файла.")
-        except ValueError as e:
-            print(f"Ошибка: {e}")
-        except Exception as e:
-            print(f"Неизвестная ошибка: {e}")
