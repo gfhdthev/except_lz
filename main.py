@@ -2,7 +2,7 @@ from files import Exception
 
 def main():
 
-        # Ожидаемые столбцы из вашего датасета
+        #столбцы, которые должны быть в файле
     file_columns = [
         "Участники гражданского оборота",
         "Тип операции",
@@ -17,11 +17,9 @@ def main():
         "Сумма cash-back"
     ]
 
-    # Путь к файлу
+    #файл
     file_name = "var11.csv"
-
-    # Создание экземпляра класса и обработка датасета
-
+    
     processor = Exception(file_name, file_columns)  
     processor.processing()  
 
